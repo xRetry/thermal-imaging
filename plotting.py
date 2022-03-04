@@ -11,7 +11,7 @@ def get_colormap(image: np.ndarray, bar_location: str = 'bottom'):
     return cm
 
 
-def plot_image(image: np.ndarray, colormap=None, line_points=None, point_points=None, rect_points=None):
+def plot_image(image: np.ndarray, colormap=None, line_points=None, point_points=None, rect_points=None, title: str = None):
     if colormap is None:
         plt.imshow(image)
     else:
@@ -24,21 +24,39 @@ def plot_image(image: np.ndarray, colormap=None, line_points=None, point_points=
     if rect_points is not None:
         x_rect, y_rect = _get_rect_coords(rect_points)
         plt.plot(x_rect, y_rect, color='r')
+    if title is not None:
+        plt.title(title)
+    plt.xlabel('Pixels')
+    plt.ylabel('Pixels')
     plt.show()
 
 
-def plot_line(temperatures: np.ndarray, tolerance: float = None):
+def plot_line(temperatures: np.ndarray, tolerance: float = None, title: str = None):
     x = np.arange(len(temperatures))
     plt.plot(x, temperatures)
     if tolerance is not None:
         lower = [t-tolerance for t in temperatures]
         upper = [t+tolerance for t in temperatures]
         plt.fill_between(x, lower, upper, alpha=0.2)
+    if title is not None:
+        plt.title(title)
+    plt.xlabel('Distanz')
+    plt.ylabel('Temperatur [°C]')
     plt.show()
 
 
-def plot_histogram(temperatures: np.ndarray):
-    plt.hist(temperatures.flatten(), bins=100, density=True)
+def plot_histogram(temperatures: np.ndarray, bins: int = 50, title: str = None, fit_normal: bool = True):
+    plt.hist(temperatures.flatten(), bins=bins, density=True)
+    if fit_normal:
+        mean = np.mean(temperatures)
+        std = np.std(temperatures.flatten())
+        t = np.linspace(mean-3*std, temperatures.max(), 200)
+        y = scipy.stats.norm.pdf(t, loc=mean, scale=std)
+        plt.plot(t, y)       
+    if title is not None:
+        plt.title(title)
+    plt.xlabel('Temperatur [°C]')
+    plt.yticks([])
     plt.show()
 
 
