@@ -2,7 +2,8 @@ import numpy as np
 import scipy.stats
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
-from temperature import _get_rect_coords, _get_colors, _get_line_coords
+from picture import _get_rect_coords, _get_line_coords
+from thermal import _get_colors
 
 
 def get_colormap(image: np.ndarray, bar_location: str = 'bottom'):
