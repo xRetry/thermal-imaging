@@ -8,13 +8,14 @@
 
 \begin{document}
 \section{Bildverarbeitung}
+\subsection{JPEG Verarbeitung}
 Die Aufnahmen der Kamera werden von der Software als JPEG Dateien abgespeichert.
 Dies ist für eine weitere quantitative Auswertung problematisch, da die gemessenen Temperaturen in RGB-Werte umgewandelt werden.
 Eine wichtige Aufgabe ist es daher, die ursprünglichen Temperaturinformationen für jeden Pixel möglichst genau wiederherzustellen.
 Dies wird in zwei Schritten bewerkstelligt:
 Einerseits der Zuordnung von Farb- und Temperaturwerten mittels des im Bild inkludierten Farbbalkens, andererseits der Umwandlung aller Pixel in Temperaturen.
 
-\subsection{Farb-Temperatur Zuordnung}
+\subsubsection{Farb-Temperatur Zuordnung}
 Jedes Bild verfügt über einen Farbbalken, welcher zum visuellen Abschätzen der Temperaturen innerhalb des Bildes dient.
 Der Maximal- und Minimalwert des Balkens ist jeweils mit der zugehörigen Temperatur gekennzeichnet.
 Mit Hilfe dieser Informationen lässt sich eine Zuordnung von Farbwert und Temperatur erzeugen.
@@ -41,7 +42,7 @@ Folglich ergibt sich ein möglicher Fehler für die berechneten Temperaturen, we
 
 Hier beschreibt $u_{scale,i}$ die Standardunsicherheit des berechneten Temperaturwerts der $i$-ten Balkenfarbe.
 
-\subsection{Farbinterpolation}
+\subsubsection{Farbinterpolation}
 Nun sind zwar die Temperaturen für alle Farben des Farbbalkens bekannt, jedoch können die Pixel des eigentlichen Bildes Farbwerte besitzen, die zwischen denen des Farbbalkens liegen.
 Dies Bedarf dem Einsatz von Farbinterpolation, was jedoch keine triviale Aufgabe ist.
 Der Farbverlauf des Farbbalkens stellt eine dreidimensionale Kurve im RGB-Raum dar, welche die Anwendung vieler der üblicher Interpolationsmethoden ausschließt.
@@ -52,5 +53,33 @@ Folglich viel unsere Wahl auf Nearest-Neighbor Interpolation, da alle anderen ge
 \end{equation}
 \begin{equation}
     u_{pixel} = \sqrt{u_{scale,i}^2 + u_{ip}^2}
+\end{equation}
+
+\subsection{TIFF Verarbeitung}
+Die der Wahl der entsprechenden Einstellung in der Seek App ermöglicht es aufgenommene Bilder im TIFF Format abzuspeichern. 
+Dieses Bildformat verfügt über mehrere "Seiten", welche verschiedene Informationen des Bildes widerspiegeln.
+Eine dieser "Seiten" enthält die gemessenen Temperaturwerte für jeden Pixel.
+Dementsprechend entfällt die Notwendigkeit die Temperaturen von den Farbwerten der Pixel abzuleiten.
+Der relative Fehler jedes Temperaturwertes ist in diesem Fall rein von der thermischen Messgenauigkeit der Kamera bestimmt.
+Eine Internetrecherche für das Modell "Seek Compact XR" ergibt eine Temperaturtoleranz $tol_{th} = 0.07 ^{\circ}C$.
+Die entsprechende Standardunsicherheit berechnet sich mit:
+
+\begin{equation}
+    u_{th} = \frac{tol_{th}}{2\sqrt{3}}
+\end{equation}
+
+\subsection{Segmentauswahl}
+Zur Durchführung weiterer Auswertungen ist es notwendig Linien und Rechtecksausschnitte definieren zu können.
+Da Rechtecke nicht in beliebiger Orientierung benötigt werden können diese einfach über diagonale Eckpixel definiert werden.
+Alle Temperaturwerte innerhalb dieser Auswahl werden zur weiteren Auswertung herangezogen.
+\\
+\\
+Linien stellen dagegen eine größere Herausforderung dar, da eine beliebige Orientierung ermöglicht werden soll.
+Für Linienpunkte die sich nicht genau mit den vorhandenen Pixeln überdecken wird daher Interpolation angewandt, um passende Temperaturwerte zu erhalten.
+Diese Interpolation wird ebenfalls für die Standardunsicherheiten durchgeführt, da diese für alle Pixel definiert sind.
+Somit erhält jeder Punkt der Linie einen entsprechenden Temperatur- und Unsicherheitswert.
+
+\begin{equation}
+    \sigma = \sqrt{\frac{\sum_i x_i^2 - \sigma_i^2}{n} - \bar x^2}
 \end{equation}
 \end{document}
