@@ -3,3 +3,8 @@
 /.vscode
 __pycache__
 /demo_images
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.synctex.gz
