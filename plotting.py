@@ -2,7 +2,6 @@ import numpy as np
 import scipy.stats
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
-from picture import _get_rect_coords, _get_line_coords
 from thermal import _get_colors
 
 
@@ -12,19 +11,27 @@ def get_colormap(image: np.ndarray, bar_location: str = 'bottom'):
     return cm
 
 
-def plot_image(image: np.ndarray, colormap=None, line_points=None, point_points=None, rect_points=None, title: str = None):
+def plot_image(image: np.ndarray, colormap=None, line_coords=None, point_coords=None, rect_coords=None, title: str = None):
     if colormap is None:
         plt.imshow(image)
     else:
         plt.imshow(image, cmap=colormap)
-    if point_points is not None:
-        plt.scatter(point_points[:, 0], point_points[:, 1], marker='x', c='r')
-    if line_points is not None:
-        x_line, y_line = _get_line_coords(line_points)
-        plt.plot(x_line, y_line, color='r')
-    if rect_points is not None:
-        x_rect, y_rect = _get_rect_coords(rect_points)
-        plt.plot(x_rect, y_rect, color='r')
+
+    if point_coords is not None:
+        plt.scatter(point_coords[:, 0], point_coords[:, 1], marker='x', c='r')
+
+    if line_coords is not None:
+        if not isinstance(line_coords, list):
+            line_coords = [line_coords]
+        for x_line, y_line in line_coords:
+            plt.plot(x_line, y_line, color='r')
+    
+    if rect_coords is not None:
+        if not isinstance(rect_coords, list):
+            rect_coords = [rect_coords]
+        for x_rect, y_rect in rect_coords:
+            plt.plot(x_rect, y_rect, color='r')
+
     if title is not None:
         plt.title(title)
     plt.xlabel('Pixels')
@@ -36,8 +43,8 @@ def plot_line(temperatures: np.ndarray, tolerance: float = None, title: str = No
     x = np.arange(len(temperatures))
     plt.plot(x, temperatures)
     if tolerance is not None:
-        lower = [t-tolerance for t in temperatures]
-        upper = [t+tolerance for t in temperatures]
+        lower = [temperatures[i]-tolerance[i] for i in range(len(temperatures))]
+        upper = [temperatures[i]+tolerance[i] for i in range(len(temperatures))]
         plt.fill_between(x, lower, upper, alpha=0.2)
     if title is not None:
         plt.title(title)
@@ -68,3 +75,16 @@ def plot_distribution(temperatures: np.ndarray, standard_uncertainty: float = 0)
     y = scipy.stats.norm.pdf(t, loc=mean, scale=std)
     plt.plot(t, y)
     plt.show()
+
+
+def test_unc():
+    t_ref = 15
+    u_ref = 0
+    t_rec = 16
+    u_rec = 0
+    t_min = 13
+    t_max = 20
+    n = 1000
+    u_min = 0.5
+    u_max = 0.5
+    pass
