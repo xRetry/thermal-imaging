@@ -1,6 +1,4 @@
-from typing import List, Tuple, Optional, Dict
-import matplotlib
-import matplotlib.pyplot as plt
+from typing import List, Optional 
 import numpy as np
 import picture, plotting, thermal
 
@@ -47,3 +45,14 @@ class ThermalImage:
             rect_select = picture.select_rectangle(self._temperatures, rect)
             plotting.plot_image(rect_select)
             plotting.plot_histogram(rect_select)
+
+    def calibrate_selection(self, true_temperature: float, tolerance: float = 0):
+        thermal.calibrate_temperatures(
+            self._temperatures,
+            self._uncertainties,
+            self._lines,
+            self._rects,
+            true_temperature,
+            tolerance
+        )
+ 
