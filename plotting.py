@@ -1,3 +1,4 @@
+from typing import Callable, Optional, Tuple
 import numpy as np
 import scipy.stats
 import matplotlib.pyplot as plt
@@ -39,13 +40,21 @@ def plot_image(image: np.ndarray, colormap=None, line_coords=None, point_coords=
     plt.show()
 
 
-def plot_line(temperatures: np.ndarray, tolerance: float = None, title: str = None):
+def plot_line(temperatures: np.ndarray, sdu: float = None, title: str = None, fit_config: Optional[Tuple[Callable, np.ndarray, np.ndarray]] = None):
     x = np.arange(len(temperatures))
     plt.plot(x, temperatures)
-    if tolerance is not None:
-        lower = [temperatures[i]-tolerance[i] for i in range(len(temperatures))]
-        upper = [temperatures[i]+tolerance[i] for i in range(len(temperatures))]
+    if sdu is not None:
+        lower = temperatures - sdu * 2        
+        upper = temperatures + sdu * 2
         plt.fill_between(x, lower, upper, alpha=0.2)
+    if fit_config is not None:
+        x_fit = np.linspace(x.min(), x.max(), 300)
+        y_fit = [fit_config[0](x_, *fit_config[1]) for x_ in x_fit]
+        y_lower = [fit_config[0](x_, *(fit_config[1] - 2*fit_config[2])) for x_ in x_fit]
+        y_upper = [fit_config[0](x_, *(fit_config[1] + 2*fit_config[2])) for x_ in x_fit]
+        plt.plot(x_fit, y_fit)
+        plt.fill_between(x_fit, y_lower, y_upper, alpha=0.5)
+
     if title is not None:
         plt.title(title)
     plt.xlabel('Distanz')

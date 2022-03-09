@@ -1,6 +1,8 @@
-from typing import Tuple, Dict, List
+from typing import Tuple, Dict, List, Callable
+from functools import partial
 import numpy as np
 from scipy.interpolate import NearestNDInterpolator, RBFInterpolator, LinearNDInterpolator, interpn, interp2d
+from scipy.optimize import curve_fit
 import picture
 
 
@@ -53,7 +55,7 @@ def convert_to_temperature(image: np.ndarray, t_min: float, t_max: float, bar_lo
 def _combine_selections(grid: np.ndarray, lines: List[np.ndarray], rects: List[np.ndarray]) -> np.ndarray:
     line_values = np.array([picture.select_line(grid, line)[2] for line in lines])
     rect_values = np.array([picture.select_rectangle(grid, rect) for rect in rects])
-    all_values = np.concatenate([line_values, rect_values.flatten()])
+    all_values = np.concatenate([line_values.flatten(), rect_values.flatten()])
     return all_values
 
 
@@ -71,3 +73,8 @@ rect_selections: List[np.ndarray], true_temperature: float, tolerance: float) ->
     uncertainties = np.sqrt(uncertainties**2 + u_selected**2 + u_ref**2)
 
 
+def fit_curve(fit_func: Callable, y, uncertainty):
+    x = np.arange(len(y))
+    params, pcov = curve_fit(fit_func, x, y, sigma=uncertainty, absolute_sigma=False)
+    std = np.sqrt(np.diagonal(pcov))
+    return params, std
