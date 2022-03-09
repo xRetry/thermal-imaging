@@ -1,4 +1,4 @@
-from typing import List, Optional 
+from typing import List, Optional, Callable
 import numpy as np
 import picture, plotting, thermal
 
@@ -32,14 +32,21 @@ class ThermalImage:
         rect_points = np.array([[x1, y1], [x2, y2]])
         self._rects.append(rect_points)
 
-    def plot_selection(self):
+    def clear_selection(self):
+        self._lines.clear()
+        self._rects.clear()
+
+    def plot_selection(self, fit_func: Optional[Callable] = None):
         line_coords = [picture._get_line_coords(l) for l in self._lines]
         rect_coords = [picture._get_rect_coords(r) for r in self._rects]
         plotting.plot_image(self._temperatures, line_coords=line_coords, rect_coords=rect_coords)
         for line in self._lines:
             x_line, y_line, z_line = picture.select_line(self._temperatures, line)
-            tolerance = thermal.get_line_uncertainty(self._uncertainties, x_line, y_line)
-            plotting.plot_line(z_line, tolerance)
+            sdu = thermal.get_line_uncertainty(self._uncertainties, x_line, y_line)
+            params, tol = None, None
+            if fit_func is not None:
+                params, tol = thermal.fit_curve(fit_func, z_line, sdu)
+            plotting.plot_line(z_line, sdu, fit_config=(fit_func, params, tol))
 
         for rect in self._rects:
             rect_select = picture.select_rectangle(self._temperatures, rect)
