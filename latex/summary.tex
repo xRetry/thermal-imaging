@@ -56,9 +56,9 @@ Folglich viel unsere Wahl auf Nearest-Neighbor Interpolation, da alle anderen ge
 \end{equation}
 
 \subsection{TIFF Verarbeitung}
-Die der Wahl der entsprechenden Einstellung in der Seek App ermöglicht es aufgenommene Bilder im TIFF Format abzuspeichern. 
-Dieses Bildformat verfügt über mehrere "Seiten", welche verschiedene Informationen des Bildes widerspiegeln.
-Eine dieser "Seiten" enthält die gemessenen Temperaturwerte für jeden Pixel.
+Die Wahl der entsprechenden Einstellung in der Seek App ermöglicht es aufgenommene Bilder im TIFF Format abzuspeichern. 
+Dieses Bildformat ist in der Lage mehrere Bilder in eine Datei zusammenzufassen.
+Im Falle der Seek Thermal App befinden sich darunter auch die gemessenen unveränderten Temperaturwerte.
 Dementsprechend entfällt die Notwendigkeit die Temperaturen von den Farbwerten der Pixel abzuleiten.
 Der relative Fehler jedes Temperaturwertes ist in diesem Fall rein von der thermischen Messgenauigkeit der Kamera bestimmt.
 Eine Internetrecherche für das Modell "Seek Compact XR" ergibt eine Temperaturtoleranz $tol_{th} = 0.07 ^{\circ}C$.
@@ -70,16 +70,39 @@ Die entsprechende Standardunsicherheit berechnet sich mit:
 
 \subsection{Segmentauswahl}
 Zur Durchführung weiterer Auswertungen ist es notwendig Linien und Rechtecksausschnitte definieren zu können.
-Da Rechtecke nicht in beliebiger Orientierung benötigt werden können diese einfach über diagonale Eckpixel definiert werden.
+Da Rechtecke nicht in beliebiger Orientierung benötigt werden können diese einfach über zwei diagonale Eckpixel definiert werden.
 Alle Temperaturwerte innerhalb dieser Auswahl werden zur weiteren Auswertung herangezogen.
 \\
 \\
 Linien stellen dagegen eine größere Herausforderung dar, da eine beliebige Orientierung ermöglicht werden soll.
-Für Linienpunkte die sich nicht genau mit den vorhandenen Pixeln überdecken wird daher Interpolation angewandt, um passende Temperaturwerte zu erhalten.
-Diese Interpolation wird ebenfalls für die Standardunsicherheiten durchgeführt, da diese für alle Pixel definiert sind.
+Für Linienpunkte die sich nicht genau mit den vorhandenen Pixeln überdecken wird daher lineare Interpolation verwendet, um passende Temperaturwerte zu erhalten.
+Die Interpolation wird ebenfalls für die Standardunsicherheiten durchgeführt, welche für jeden Pixel bekannt sind.
 Somit erhält jeder Punkt der Linie einen entsprechenden Temperatur- und Unsicherheitswert.
 
+\section{Temperaturkalibrierung}
+Mittels einer Referenzmessung können die absoluten Temperaturwerte der wahren Temperatur angepasst werden.
+Hierzu wird ein Bild eines Referenzfläche mit bekannten Emissionsgrad aufgenommen.
+Aus dem Bild werden alle Temperaturen vom Bereich der Referenzfläche ausgewählt und gemittelt.
+Anschließend können die Temperaturwerte des gesamten Bildes um die Differenz zwischen Mittelwert $\overline T_{sel}$ und Referenztemperatur $T_\textit{ref}$ verschoben werden.
+
 \begin{equation}
-    \sigma = \sqrt{\frac{\sum_i x_i^2 - \sigma_i^2}{n} - \bar x^2}
+    T_{pixel,cal} = T_{pixel} - \left( \overline T_\textit{sel} - T_\textit{ref} \right)
 \end{equation}
+
+In die Betrachtung der Fehlerfortpflanzung fließen hier die Standardunsicherheiten aller Temperaturen ein.
+Die Werte des Bildes innerhalb des Vergleichbereichs zeigen dabei eine gewisse Temperaturverteilung, welche im Normalfall einer Gauß-Verteilung entspricht.
+Zusätzlich besitzen die einzelnen Temperaturen die diese Verteilung bilden selbst über ihren eigenen Unsicherheitswert.
+Folglich ergibt sich für die Standardunsicherheit $u_{sel}$ der gemittelten Bereichstemperatur $T_{sel}$ eine kombinierte Unsicherheit aus beiden Quellen. 
+
+\begin{equation}
+    u_{sel} = \frac{1}{n} \sqrt{\frac{\sum_i T_\textit{pixel}^2 - u_\textit{pixel}^2}{n} - \overline T_\textit{sel}^2}
+\end{equation}
+
+\begin{equation}
+    u_{pixel,cal} = \sqrt{u_{pixel}^2 + u_{sel}^2 + u_\textit{ref}^2}
+\end{equation}
+
+\section{Temperaturverlauf}
+
+
 \end{document}
