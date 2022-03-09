@@ -66,25 +66,3 @@ def plot_histogram(temperatures: np.ndarray, bins: int = 50, title: str = None, 
     plt.xlabel('Temperatur [°C]')
     plt.yticks([])
     plt.show()
-
-
-def plot_distribution(temperatures: np.ndarray, standard_uncertainty: float = 0):
-    mean = np.mean(temperatures)
-    std = np.std(temperatures.flatten())
-    t = np.linspace(mean-3*std, temperatures.max(), 200)
-    y = scipy.stats.norm.pdf(t, loc=mean, scale=std)
-    plt.plot(t, y)
-    plt.show()
-
-
-def test_unc():
-    t_ref = 15
-    u_ref = 0
-    t_rec = 16
-    u_rec = 0
-    t_min = 13
-    t_max = 20
-    n = 1000
-    u_min = 0.5
-    u_max = 0.5
-    pass
