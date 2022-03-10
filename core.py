@@ -54,11 +54,14 @@ class ThermalImage:
             plotting.plot_histogram(rect_select)
 
     def calibrate_selection(self, true_temperature: float, tolerance: float = 0):
+        temperatures_selected = picture.combine_selections(self._temperatures, self._lines, self._rects)
+        uncertainties_selected = picture.combine_selections(self._uncertainties, self._lines, self._rects)
+        plotting.plot_histogram(temperatures_selected)
         thermal.calibrate_temperatures(
             self._temperatures,
             self._uncertainties,
-            self._lines,
-            self._rects,
+            temperatures_selected,
+            uncertainties_selected,
             true_temperature,
             tolerance
         )
