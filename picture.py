@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, List
 import numpy as np
 import matplotlib.image as mpimg
 from scipy.interpolate import interpn
@@ -22,9 +22,8 @@ def _get_rect_coords(rect_points: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
 def load_from_jpg(path: str, t_min: float, t_max: float, bar_location: str = 'bottom', interp: str = 'nearest', thermal_tolerance: float = 0) -> core.ThermalImage:
     image = mpimg.imread(path, format='jpg')
     temperatures = thermal.convert_to_temperature(image, t_min, t_max, bar_location, interp)
-    uncertainty_mapping = thermal.get_uncertainty(image, bar_location, temperatures, t_min, t_max, thermal_tolerance=thermal_tolerance)
-    func = np.vectorize(lambda x: uncertainty_mapping[x]) 
-    uncertainties = func(temperatures)
+    uncertainty_mapping = thermal.get_uncertainty(image, t_min, t_max, bar_location, interp, thermal_tolerance=thermal_tolerance)
+    uncertainties = uncertainty_mapping(temperatures)
     th_image = core.ThermalImage(
         image=image,
         temperatures=temperatures,
@@ -52,3 +51,11 @@ def select_line(temperatures: np.ndarray, line_points: np.ndarray) -> np.ndarray
     points = (np.arange(temperatures.shape[0]), np.arange(temperatures.shape[1]))
     z = interpn(points, temperatures, np.array(list(zip(x, y))))
     return x, y, z
+
+
+def combine_selections(grid: np.ndarray, lines: List[np.ndarray], rects: List[np.ndarray]) -> np.ndarray:
+    line_values = np.concatenate([select_line(grid, line)[2] for line in lines]) if len(lines) > 0 else np.array([])
+    rect_values = np.concatenate([select_rectangle(grid, rect).flatten() for rect in rects]) if len(rects) > 0 else np.array([])
+    all_values = np.concatenate([line_values.flatten(), rect_values.flatten()])
+    return all_values
+
