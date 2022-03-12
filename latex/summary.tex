@@ -9,15 +9,17 @@
 \begin{document}
 \section{Bildverarbeitung}
 \subsection{JPEG Verarbeitung}
-Die Aufnahmen der Kamera werden von der Software als JPEG Dateien abgespeichert.
+Die Aufnahmen der Kamera werden von der Software standardmäßig als JPEG Dateien abgespeichert.
 Dies ist für eine weitere quantitative Auswertung problematisch, da die gemessenen Temperaturen in RGB-Werte umgewandelt werden.
-Eine wichtige Aufgabe ist es daher, die ursprünglichen Temperaturinformationen für jeden Pixel möglichst genau wiederherzustellen.
+Zusätzlich ist die Erstellung von JPEG Dateien mit dem Verlust von Bildinformation gekoppelt. 
+Dementsprechend ist es für eine quantitative Auswertung notwendig die ursprünglichen Temperaturinformationen für jeden Pixel möglichst genau wiederherzustellen.
 Dies wird in zwei Schritten bewerkstelligt:
 Einerseits der Zuordnung von Farb- und Temperaturwerten mittels des im Bild inkludierten Farbbalkens, andererseits der Umwandlung aller Pixel in Temperaturen.
 
 \subsubsection{Farb-Temperatur Zuordnung}
-Jedes Bild verfügt über einen Farbbalken, welcher zum visuellen Abschätzen der Temperaturen innerhalb des Bildes dient.
-Der Maximal- und Minimalwert des Balkens ist jeweils mit der zugehörigen Temperatur gekennzeichnet.
+Jedes Bild verfügt über eine Farbskala, welche zum visuellen Abschätzen der Temperaturen innerhalb des Bildes dient.
+Bei der Wahl des Aufnahmemodus ist es wichtig eine lineare Farbskala zu verwenden, da es andernfalls nicht möglich ist ein genaue Temperaturzuordnung zu finden.
+Der Maximal- und Minimalwert der Skala ist in der App jeweils mit der entsprechenden Temperatur gekennzeichnet.
 Mit Hilfe dieser Informationen lässt sich eine Zuordnung von Farbwert und Temperatur erzeugen.
 Für jeden Pixel $i$ des Farbbalkens kann die korrespondierende Temperatur $T_{scale,i}$ mittels folgender Formel berechnet werden:
 
@@ -25,7 +27,7 @@ Für jeden Pixel $i$ des Farbbalkens kann die korrespondierende Temperatur $T_{s
     T_{scale,i} = \frac{i}{n} \left(T_{max} - T_{min}\right) + T_{min}
 \end{equation}
 
-wobei $n$ die Anzahl der Pixel des Farbbalkens representiert.
+wobei $n$ die Anzahl der Pixel des Farbbalkens repräsentiert.
 Die beiden angegebenen Randtemperaturen $T_{min}$ und $T_{max}$ werden jeweils ganzzahlig angegebenen.
 Dies lässt die Frage offen, ob diese zur Präsentation auf- oder abgerundet wurden.
 Die Standardunsicherheit der Randtemperaturen $u_{round}$ kann quantifiziert werden durch:
@@ -43,22 +45,22 @@ Folglich ergibt sich ein möglicher Fehler für die berechneten Temperaturen, we
 Hier beschreibt $u_{scale,i}$ die Standardunsicherheit des berechneten Temperaturwerts der $i$-ten Balkenfarbe.
 
 \subsubsection{Farbinterpolation}
-Nun sind zwar die Temperaturen für alle Farben des Farbbalkens bekannt, jedoch können die Pixel des eigentlichen Bildes Farbwerte besitzen, die zwischen denen des Farbbalkens liegen.
-Dies Bedarf dem Einsatz von Farbinterpolation, was jedoch keine triviale Aufgabe ist.
-Der Farbverlauf des Farbbalkens stellt eine dreidimensionale Kurve im RGB-Raum dar, welche die Anwendung vieler der üblicher Interpolationsmethoden ausschließt.
-Folglich viel unsere Wahl auf Nearest-Neighbor Interpolation, da alle anderen getesteten Methoden fehlschlugen.
+Nun sind zwar die Temperaturen für alle Farben der Farbskala bekannt, jedoch können die Pixel des eigentlichen Bildes Farbwerte besitzen, die zwischen jenen der Skala liegen.
+Mit Hilfe von Interpolation lassen sich auch diesen Farben Temperaturen zuordnen.
+Im Allgemeinen ist die Interpolation von RGB Werten jedoch keine einfache Aufgabe. 
+Der Farbverlauf der Skala stellt eine dreidimensionale Kurve im RGB-Raum dar, welche auf Grund des JPEG Formats über ungenaue Farbwerte verfügt.
+Dies schließt die Anwendung vieler der üblicher Interpolationsmethoden aus.
+Eine mögliche Variante ist der Einsatz von Nearest-Neighbor Interpolation, welche allerdings zu einem zusätzlichen Interpolationsfehler führt.
+\\
+\\
+Alternativ kann durch die Verwendung einer schwarz-weißen Farbskala das Problem der Farbinterpolation im gesamten Umgangen werden.
+In diesem Fall liegen alle Farbwerte auf einer eindeutig definierten Linie, wodurch lineare Interpolation ein präzises Ergebnis liefert.
 
-\begin{equation}
-    u_{ip} = \frac{T_{max} - T_{min}}{4\sqrt{3}n}
-\end{equation}
-\begin{equation}
-    u_{pixel} = \sqrt{u_{scale,i}^2 + u_{ip}^2}
-\end{equation}
 
 \subsection{TIFF Verarbeitung}
-Die Wahl der entsprechenden Einstellung in der Seek App ermöglicht es aufgenommene Bilder im TIFF Format abzuspeichern. 
+Die Wahl der entsprechenden Einstellung in der Seek Thermal App ermöglicht es aufgenommene Bilder im TIFF Format abzuspeichern. 
 Dieses Bildformat ist in der Lage mehrere Bilder in eine Datei zusammenzufassen.
-Im Falle der Seek Thermal App befinden sich darunter auch die gemessenen unveränderten Temperaturwerte.
+Im Falle der Seek App befinden sich darunter auch die gemessenen unveränderten Temperaturwerte.
 Dementsprechend entfällt die Notwendigkeit die Temperaturen von den Farbwerten der Pixel abzuleiten.
 Der relative Fehler jedes Temperaturwertes ist in diesem Fall rein von der thermischen Messgenauigkeit der Kamera bestimmt.
 Eine Internetrecherche für das Modell "Seek Compact XR" ergibt eine Temperaturtoleranz $tol_{th} = 0.07 ^{\circ}C$.
@@ -70,11 +72,11 @@ Die entsprechende Standardunsicherheit berechnet sich mit:
 
 \subsection{Segmentauswahl}
 Zur Durchführung weiterer Auswertungen ist es notwendig Linien und Rechtecksausschnitte definieren zu können.
-Da Rechtecke nicht in beliebiger Orientierung benötigt werden können diese einfach über zwei diagonale Eckpixel definiert werden.
+Da Rechtecke nicht in beliebiger Orientierung benötigt werden, können diese einfach über zwei diagonale Eckpixel definiert werden.
 Alle Temperaturwerte innerhalb dieser Auswahl werden zur weiteren Auswertung herangezogen.
 \\
 \\
-Linien stellen dagegen eine größere Herausforderung dar, da eine beliebige Orientierung ermöglicht werden soll.
+Linien stellen dagegen eine größere Herausforderung dar, da eine beliebige Wahl der Linienorientierung ermöglicht werden soll.
 Für Linienpunkte die sich nicht genau mit den vorhandenen Pixeln überdecken wird daher lineare Interpolation verwendet, um passende Temperaturwerte zu erhalten.
 Die Interpolation wird ebenfalls für die Standardunsicherheiten durchgeführt, welche für jeden Pixel bekannt sind.
 Somit erhält jeder Punkt der Linie einen entsprechenden Temperatur- und Unsicherheitswert.
@@ -83,14 +85,14 @@ Somit erhält jeder Punkt der Linie einen entsprechenden Temperatur- und Unsiche
 Mittels einer Referenzmessung können die absoluten Temperaturwerte der wahren Temperatur angepasst werden.
 Hierzu wird ein Bild eines Referenzfläche mit bekannten Emissionsgrad aufgenommen.
 Aus dem Bild werden alle Temperaturen vom Bereich der Referenzfläche ausgewählt und gemittelt.
-Anschließend können die Temperaturwerte des gesamten Bildes um die Differenz zwischen Mittelwert $\overline T_{sel}$ und Referenztemperatur $T_\textit{ref}$ verschoben werden.
+Anschließend können die Temperaturwerte des gesamten Bildes um die Differenz zwischen Mittelwert $\overline T_{sel}$ und Referenztemperatur $T_\textit{obj}$ verschoben werden.
 
 \begin{equation}
-    T_{pixel,cal} = T_{pixel} - \left( \overline T_\textit{sel} - T_\textit{ref} \right)
+    T_{pixel,cal} = T_{pixel} - \left( \overline T_\textit{sel} - T_\textit{obj} \right)
 \end{equation}
 
 In die Betrachtung der Fehlerfortpflanzung fließen hier die Standardunsicherheiten aller Temperaturen ein.
-Die Werte des Bildes innerhalb des Vergleichbereichs zeigen dabei eine gewisse Temperaturverteilung, welche im Normalfall einer Gauß-Verteilung entspricht.
+Die Werte des Bildes innerhalb des Vergleichbereiches zeigen dabei eine gewisse Temperaturverteilung, welche im Normalfall einer Gauß-Verteilung entspricht.
 Zusätzlich besitzen die einzelnen Temperaturen die diese Verteilung bilden selbst über ihren eigenen Unsicherheitswert.
 Folglich ergibt sich für die Standardunsicherheit $u_{sel}$ der gemittelten Bereichstemperatur $T_{sel}$ eine kombinierte Unsicherheit aus beiden Quellen. 
 
@@ -99,7 +101,7 @@ Folglich ergibt sich für die Standardunsicherheit $u_{sel}$ der gemittelten Ber
 \end{equation}
 
 \begin{equation}
-    u_{pixel,cal} = \sqrt{u_{pixel}^2 + u_{sel}^2 + u_\textit{ref}^2}
+    u_{pixel,cal} = \sqrt{u_{pixel}^2 + u_{sel}^2 + u_\textit{obj}^2}
 \end{equation}
 
 \section{Temperaturverlauf}
