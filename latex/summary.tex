@@ -3,6 +3,8 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
+\usepackage{graphicx,caption}
+\usepackage{float}
 
 \setlength\parindent{0pt}
 
@@ -17,6 +19,11 @@ Dies wird in zwei Schritten bewerkstelligt:
 Einerseits der Zuordnung von Farb- und Temperaturwerten mittels des im Bild inkludierten Farbbalkens, andererseits der Umwandlung aller Pixel in Temperaturen.
 
 \subsubsection{Farb-Temperatur Zuordnung}
+
+\begin{center}
+    $<$ Bild - Beispielbild $>$
+\end{center}
+
 Jedes Bild verfügt über eine Farbskala, welche zum visuellen Abschätzen der Temperaturen innerhalb des Bildes dient.
 Bei der Wahl des Aufnahmemodus ist es wichtig eine lineare Farbskala zu verwenden, da es andernfalls nicht möglich ist ein genaue Temperaturzuordnung zu finden.
 Der Maximal- und Minimalwert der Skala ist in der App jeweils mit der entsprechenden Temperatur gekennzeichnet.
@@ -56,6 +63,12 @@ Eine mögliche Variante ist der Einsatz von Nearest-Neighbor Interpolation, welc
 Alternativ kann durch die Verwendung einer schwarz-weißen Farbskala das Problem der Farbinterpolation im gesamten Umgangen werden.
 In diesem Fall liegen alle Farbwerte auf einer eindeutig definierten Linie, wodurch lineare Interpolation ein präzises Ergebnis liefert.
 
+\begin{figure}[H]
+    \centering
+    \captionsetup{width=8cm}
+    \includegraphics[width=10cm]{img/farb_vs_grau.png}
+    \caption{Vergleich der Kurve einer Farbskala und einer Grauskala im RGB-Raum.}
+\end{figure}
 
 \subsection{TIFF Verarbeitung}
 Die Wahl der entsprechenden Einstellung in der Seek Thermal App ermöglicht es aufgenommene Bilder im TIFF Format abzuspeichern. 
@@ -70,41 +83,75 @@ Die entsprechende Standardunsicherheit berechnet sich mit:
     u_{th} = \frac{tol_{th}}{2\sqrt{3}}
 \end{equation}
 
-\subsection{Segmentauswahl}
-Zur Durchführung weiterer Auswertungen ist es notwendig Linien und Rechtecksausschnitte definieren zu können.
-Da Rechtecke nicht in beliebiger Orientierung benötigt werden, können diese einfach über zwei diagonale Eckpixel definiert werden.
-Alle Temperaturwerte innerhalb dieser Auswahl werden zur weiteren Auswertung herangezogen.
-\\
-\\
-Linien stellen dagegen eine größere Herausforderung dar, da eine beliebige Wahl der Linienorientierung ermöglicht werden soll.
-Für Linienpunkte die sich nicht genau mit den vorhandenen Pixeln überdecken wird daher lineare Interpolation verwendet, um passende Temperaturwerte zu erhalten.
-Die Interpolation wird ebenfalls für die Standardunsicherheiten durchgeführt, welche für jeden Pixel bekannt sind.
-Somit erhält jeder Punkt der Linie einen entsprechenden Temperatur- und Unsicherheitswert.
-
-\section{Temperaturkalibrierung}
-Mittels einer Referenzmessung können die absoluten Temperaturwerte der wahren Temperatur angepasst werden.
-Hierzu wird ein Bild eines Referenzfläche mit bekannten Emissionsgrad aufgenommen.
-Aus dem Bild werden alle Temperaturen vom Bereich der Referenzfläche ausgewählt und gemittelt.
-Anschließend können die Temperaturwerte des gesamten Bildes um die Differenz zwischen Mittelwert $\overline T_{sel}$ und Referenztemperatur $T_\textit{obj}$ verschoben werden.
+\section{Emissionsgradbestimmung}
+Im Falle eines schwarzen Körpers ist die von der Kamera erfasste Strahlungsleistung definiert durch:
 
 \begin{equation}
-    T_{pixel,cal} = T_{pixel} - \left( \overline T_\textit{sel} - T_\textit{obj} \right)
+    P(T) = \sigma f T^4
 \end{equation}
 
-In die Betrachtung der Fehlerfortpflanzung fließen hier die Standardunsicherheiten aller Temperaturen ein.
-Die Werte des Bildes innerhalb des Vergleichbereiches zeigen dabei eine gewisse Temperaturverteilung, welche im Normalfall einer Gauß-Verteilung entspricht.
-Zusätzlich besitzen die einzelnen Temperaturen die diese Verteilung bilden selbst über ihren eigenen Unsicherheitswert.
-Folglich ergibt sich für die Standardunsicherheit $u_{sel}$ der gemittelten Bereichstemperatur $T_{sel}$ eine kombinierte Unsicherheit aus beiden Quellen. 
+Die reale erfasste Strahlungsleistung kann vereinfacht mittels des Emissionsgrades ausgedrückt werden. 
+Der Anteil der reflektierten Strahlung kann während der Versuche als konstant angenommen werden.
+Dementsprechend kann aus der Differenz zwischen der gemessenen Temperatur $T_\textit{sens}$ und tatsächlichen Temperatur $T_\textit{obj}$ aus zwei Versuchen der Emissionsgrad $\epsilon$ berechnet werden.
 
 \begin{equation}
-    u_{sel} = \frac{1}{n} \sqrt{\frac{\sum_i T_\textit{pixel}^2 - u_\textit{pixel}^2}{n} - \overline T_\textit{sel}^2}
+    P(T_\textit{sens}) = \epsilon \cdot P(T_\textit{obj}) + (1 - \epsilon) \cdot P(T_\textit{env})
 \end{equation}
 
 \begin{equation}
-    u_{pixel,cal} = \sqrt{u_{pixel}^2 + u_{sel}^2 + u_\textit{obj}^2}
+   T_\textit{sens}^4 = \epsilon \cdot T_\textit{obj}^4 + (1 - \epsilon) \cdot T_\textit{env}^4
 \end{equation}
 
-\section{Temperaturverlauf}
+\begin{equation}
+    T_\textit{sens}^4 - \epsilon \cdot T_\textit{obj}^4 = (1 - \epsilon) \cdot T_\textit{env}^4 = C = \textit{const.}
+\end{equation}
+
+\begin{equation}
+    T_\textit{sens,1}^4 - \epsilon \cdot T_\textit{obj,1}^4 = T_\textit{sens,2}^4 - \epsilon \cdot T_\textit{obj,2}^4 
+\end{equation}
+
+\begin{equation}
+    \epsilon = \frac{T_\textit{sens,1}^4 - T_\textit{sens,2}^4}{T_\textit{obj,1}^4 - T_\textit{obj,2}^4}
+\end{equation}
+
+Da der Emissionsgrad der Referenzstelle ($\epsilon_\textit{obj}$) bekannt ist, kann der Emissionsgrad der Kamera ($\epsilon_\textit{sens}$) berechnet werden.
+Weiters kann für das gesamte Bild der Emissionsgrad jedes einzelnen Pixel bestimmt werden.
+Diese Werte beziehen sich auf die tatsächliche Temperatur des Körpers $T_\textit{obj}$ und sind nur für diesen gültig.
+
+\begin{equation}
+    \epsilon_\textit{sens} = \frac{\epsilon}{\epsilon_\textit{obj}}
+\end{equation}
+
+\begin{equation}
+    \epsilon_\textit{pixel} = \frac{T_\textit{pixel}^4 - C}{\epsilon_\textit{sens} \cdot T_\textit{obj}^4}
+\end{equation}
+
+\begin{figure}[H]
+    \centering
+    \captionsetup{width=12cm}
+    \includegraphics[width=6cm]{img/ref_sel_1.png}
+    \includegraphics[width=6cm]{img/ref_sel_2.png}
+    \caption{Auswahl eines Referenzbereiches (graue Rechtecke) mit bekanntem Emissionsgrad für beide Bilder.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \captionsetup{width=12cm}
+    \includegraphics[width=6cm]{img/eps_1.png}
+    \includegraphics[width=6cm]{img/eps_2.png}
+    \caption{Der berechnete Emissionsgrad für jeden Pixel der beiden Bilder.}
+\end{figure}
+
+Zur Kontrolle des berechneten Emissionsgrades kann rückwirkend die Temperatur des Körpers berechnet werden.
+Im Idealfall zeigt der gesamte Körper die gleiche Temperatur.
+
+\begin{equation}
+    T_\textit{pixel,corr} = \sqrt[4]{\frac{T_\textit{pixel}^4 - C}{\epsilon_\textit{pixel} \cdot \epsilon_\textit{sens}}}
+\end{equation}
+
+\begin{center}
+    $<$BILD - Temperatur korrigiert$>$
+\end{center}
 
 
 \end{document}
