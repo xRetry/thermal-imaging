@@ -1,4 +1,4 @@
-from typing import List, Optional, Callable
+from typing import List, Optional, Callable, Tuple
 import numpy as np
 import picture, plotting, thermal
 
@@ -9,6 +9,9 @@ class ThermalImage:
     _uncertainties: np.ndarray
     _lines: List[np.ndarray]
     _rects: List[np.ndarray]
+    _emissivity_effective: float
+    _emissivity_camera: float
+    _constant: float
 
     def __init__(self, image: np.ndarray, temperatures: np.ndarray, uncertainties: Optional[np.ndarray] = None):
         if uncertainties is None:
@@ -17,12 +20,20 @@ class ThermalImage:
         self._temperatures = temperatures
         self._uncertainties = uncertainties
         self._lines, self._rects = [], []
+        self._emissivity_camera = 1
+        self._emissivity_effective = 1
+        self._constant = 0
+
+    def set_camera_emissivity(self, emissivity_effective: float, emissivity_camera: float, constant: float):
+        self._emissivity_camera = emissivity_camera
+        self._emissivity_effective = emissivity_effective
+        self._constant = constant
 
     def plot_image(self):
         plotting.plot_image(self._image)
     
     def plot_temperatures(self):
-        plotting.plot_image(self._temperatures)
+        plotting.plot_image((self._temperatures - self._constant) / self._emissivity_effective)
 
     def add_line(self, x1: int, y1: int, x2: int, y2: int):
         line_points = np.array([[x1, y1], [x2, y2]])
@@ -53,6 +64,10 @@ class ThermalImage:
             plotting.plot_image(rect_select)
             plotting.plot_histogram(rect_select)
 
+    def plot_emissivity(self, true_temperature: float):
+        emissivity = (self._temperatures - self._constant) / (self._emissivity_camera * true_temperature)
+        plotting.plot_image(emissivity)
+
     def calibrate_selection(self, true_temperature: float, tolerance: float = 0):
         temperatures_selected = picture.combine_selections(self._temperatures, self._lines, self._rects)
         uncertainties_selected = picture.combine_selections(self._uncertainties, self._lines, self._rects)
@@ -65,4 +80,23 @@ class ThermalImage:
             true_temperature,
             tolerance
         )
+
+    def get_selection(self):
+        image_selected = picture.combine_selections(self._image, self._lines, self._rects)
+        temperatures_selected = picture.combine_selections(self._temperatures, self._lines, self._rects)
+        uncertainties_selected = picture.combine_selections(self._uncertainties, self._lines, self._rects)
+        return ThermalImage(image_selected, temperatures_selected, uncertainties_selected)
+
  
+def determine_emissivity(img1: ThermalImage, img2: ThermalImage, true_temperature1: float, true_temperature2: float, true_emissivity: float = 1) -> None:
+    img1_selected = img1.get_selection()
+    img2_selected = img2.get_selection()
+    t1_mean = np.mean(img1_selected._temperatures.flatten())
+    t2_mean = np.mean(img2_selected._temperatures.flatten())
+
+    emissivity_effective = (t1_mean - t2_mean) / (true_temperature1 - true_temperature2)
+    emissivity_camera = emissivity_effective / true_emissivity
+    constant = t1_mean - emissivity_effective * true_temperature1
+
+    img1.set_camera_emissivity(emissivity_effective, emissivity_camera, constant)
+    img2.set_camera_emissivity(emissivity_effective, emissivity_camera, constant)

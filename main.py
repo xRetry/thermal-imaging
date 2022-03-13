@@ -1,5 +1,6 @@
 import numpy as np
 import picture
+import core
 
 def fit_func(x, a, b, c) -> float:
     return a * np.exp(-b * x) + c
@@ -15,11 +16,21 @@ def ref1_tiff():
     )
     img.add_rectangle(47, 31, 51, 41)
     img.add_rectangle(48, 23, 53, 30)
-    img.plot_selection()
-    img.calibrate_selection(80.7, 1)
+    # img.plot_selection()
     # img.plot_temperatures()
+    # img = img.get_selection()
     return img
- 
+
+def ref2_tiff():
+    img = picture.load_from_tiff(
+        path='images/img_thermal_12-27-53_55-8.tiff',
+        thermal_tolerance=0.035
+    )
+    img.add_rectangle(54, 36, 61, 47)
+    img.add_rectangle(57, 24, 62, 34)
+    # img.plot_selection()
+    # img = img.get_selection()
+    return img
 
 def ref1_jpg():
     img = picture.load_from_jpg(
@@ -38,13 +49,13 @@ def ref1_jpg():
  
 
 def run():
-    # img = ref1_tiff()
-    img2 = ref1_jpg()
-    # img.plot_image()
-    # img.plot_temperatures()
-    # img.add_line(50, 2, 50, 75)
-    # For 12-16-53
-    # img.plot_selection(fit_func=fit_func2)
+    img1 = ref1_tiff()
+    img2 = ref2_tiff()
+    # img1.plot_temperatures()
+    core.determine_emissivity(img1, img2, 80.7, 55.8, true_emissivity=0.95)
+    img1.plot_emissivity(80.7)
+    img2.plot_emissivity(55.8)
+    # img1.plot_temperatures()
 
 if __name__ == '__main__':
     run()
