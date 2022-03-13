@@ -12,29 +12,29 @@ def get_colormap(image: np.ndarray, bar_location: str = 'bottom'):
     return cm
 
 
-def plot_image(image: np.ndarray, colormap=None, line_coords=None, point_coords=None, rect_coords=None, title: str = None, cbar_label = None):
+def plot_image(image: np.ndarray, colormap=plt.get_cmap('turbo'), line_coords=None, point_coords=None, rect_coords=None, title: str = None, cbar_label = None):
     if colormap is None:
         plt.imshow(image)
     else:
         plt.imshow(image, cmap=colormap)
 
     if point_coords is not None:
-        plt.scatter(point_coords[:, 0], point_coords[:, 1], marker='x', c='r')
+        plt.scatter(point_coords[:, 0], point_coords[:, 1], marker='x', c='m')
 
     if line_coords is not None:
         if not isinstance(line_coords, list):
             line_coords = [line_coords]
         for x_line, y_line in line_coords:
-            plt.plot(x_line, y_line, color='r')
+            plt.plot(x_line, y_line, color='m')
     
     if rect_coords is not None:
         if not isinstance(rect_coords, list):
             rect_coords = [rect_coords]
         for x_rect, y_rect in rect_coords:
-            plt.plot(x_rect, y_rect, color='r')
+            plt.plot(x_rect, y_rect, color='lightgrey')
 
     if cbar_label is not None:
-        cbar = plt.colorbar()
+        cbar = plt.colorbar(fraction=0.046, pad=0.04)
         cbar.ax.set_ylabel(cbar_label)
         cbar.ax.get_yaxis().set_ticks(np.round(np.linspace(image.min(), image.max(), 7), 2))
 
@@ -43,6 +43,7 @@ def plot_image(image: np.ndarray, colormap=None, line_coords=None, point_coords=
     
     plt.xlabel('Pixel')
     plt.ylabel('Pixel')
+    plt.tight_layout()
     plt.show()
 
 
