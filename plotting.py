@@ -12,7 +12,7 @@ def get_colormap(image: np.ndarray, bar_location: str = 'bottom'):
     return cm
 
 
-def plot_image(image: np.ndarray, colormap=None, line_coords=None, point_coords=None, rect_coords=None, title: str = None):
+def plot_image(image: np.ndarray, colormap=None, line_coords=None, point_coords=None, rect_coords=None, title: str = None, cbar_label = None):
     if colormap is None:
         plt.imshow(image)
     else:
@@ -33,10 +33,16 @@ def plot_image(image: np.ndarray, colormap=None, line_coords=None, point_coords=
         for x_rect, y_rect in rect_coords:
             plt.plot(x_rect, y_rect, color='r')
 
+    if cbar_label is not None:
+        cbar = plt.colorbar()
+        cbar.ax.set_ylabel(cbar_label)
+        cbar.ax.get_yaxis().set_ticks(np.round(np.linspace(image.min(), image.max(), 7), 2))
+
     if title is not None:
         plt.title(title)
-    plt.xlabel('Pixels')
-    plt.ylabel('Pixels')
+    
+    plt.xlabel('Pixel')
+    plt.ylabel('Pixel')
     plt.show()
 
 

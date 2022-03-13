@@ -51,11 +51,12 @@ def ref1_jpg():
 def run():
     img1 = ref1_tiff()
     img2 = ref2_tiff()
-    # img1.plot_temperatures()
+    img1.plot_selection(title='Aufnahme 1 - Auswahl des Referenzbereichs', cbar_label='Temperatur [°C]')
+    img2.plot_selection(title='Aufnahme 2 - Auswahl des Referenzbereichs', cbar_label='Temperatur [°C]')
     core.determine_emissivity(img1, img2, 80.7, 55.8, true_emissivity=0.95)
-    img1.plot_emissivity(80.7)
-    img2.plot_emissivity(55.8)
-    # img1.plot_temperatures()
+    img1.plot_emissivity(80.7, title='Aufnahme 1 - Emissionsgrad', cbar_label='Emissionsgrad')
+    img2.plot_emissivity(55.8, title='Aufnahme 2 - Emissionsgrad', cbar_label='Emissionsgrad')
+    img1.plot_temperatures(title='Temperatur des Würfels nach Kalibrierung', cbar_label='Temperatur [°C]')
 
 if __name__ == '__main__':
     run()
