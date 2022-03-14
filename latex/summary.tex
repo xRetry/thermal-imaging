@@ -20,18 +20,14 @@ Einerseits der Zuordnung von Farb- und Temperaturwerten mittels des im Bild inkl
 
 \subsubsection{Farb-Temperatur Zuordnung}
 
-\begin{center}
-    $<$ Bild - Beispielbild $>$
-\end{center}
-
 Jedes Bild verfügt über eine Farbskala, welche zum visuellen Abschätzen der Temperaturen innerhalb des Bildes dient.
 Bei der Wahl des Aufnahmemodus ist es wichtig eine lineare Farbskala zu verwenden, da es andernfalls nicht möglich ist ein genaue Temperaturzuordnung zu finden.
 Der Maximal- und Minimalwert der Skala ist in der App jeweils mit der entsprechenden Temperatur gekennzeichnet.
 Mit Hilfe dieser Informationen lässt sich eine Zuordnung von Farbwert und Temperatur erzeugen.
-Für jeden Pixel $i$ des Farbbalkens kann die korrespondierende Temperatur $T_{scale,i}$ mittels folgender Formel berechnet werden:
+Für den $k$-ten Pixel des Farbskala kann die korrespondierende Temperatur $T_{k}$ mittels folgender Formel berechnet werden:
 
 \begin{equation}
-    T_{scale,i} = \frac{i}{n} \left(T_{max} - T_{min}\right) + T_{min}
+    T_{k} = \frac{k}{n} \left(T_{max} - T_{min}\right) + T_{min}
 \end{equation}
 
 wobei $n$ die Anzahl der Pixel des Farbbalkens repräsentiert.
@@ -43,13 +39,13 @@ Die Standardunsicherheit der Randtemperaturen $u_{round}$ kann quantifiziert wer
     u_{round} = \frac{1}{2\sqrt{3}}
 \end{equation}
 
-Folglich ergibt sich ein möglicher Fehler für die berechneten Temperaturen, welcher sich über die Fehlerfortpflanzung berechnen lässt:
+Folglich ergibt sich ein möglicher Temperaturfehler für jeden Farbwert der Skala $u_k$, welcher sich über die Fehlerfortpflanzung berechnen lässt:
 
 \begin{equation}
-    u_{scale,i} = \sqrt{\left(\frac{i}{n} u_{round} \right)^2 + \left(\left(1 - \frac{i}{n}\right) u_{round}\right)^2}
+    u_k = \sqrt{\left(\frac{k}{n} u_{round} \right)^2 + \left(\left(1 - \frac{k}{n}\right) u_{round}\right)^2}
 \end{equation}
 
-Hier beschreibt $u_{scale,i}$ die Standardunsicherheit des berechneten Temperaturwerts der $i$-ten Balkenfarbe.
+Hier beschreibt $u_k$ die Standardunsicherheit des berechneten Temperaturwerts der $k$-ten Skalenfarbe.
 
 \subsubsection{Farbinterpolation}
 Nun sind zwar die Temperaturen für alle Farben der Farbskala bekannt, jedoch können die Pixel des eigentlichen Bildes Farbwerte besitzen, die zwischen jenen der Skala liegen.
@@ -70,18 +66,20 @@ In diesem Fall liegen alle Farbwerte auf einer eindeutig definierten Linie, wodu
     \caption{Vergleich der Kurve einer Farbskala und einer Grauskala im RGB-Raum.}
 \end{figure}
 
+Die zugehörigen Unsicherheitswerte für jeden Pixel im Bildes $u_i$ können ebenso interpoliert werden.
+Sie kombinieren sich mit der thermischen Messungenauigkeit der Kamera.
+Eine Internetrecherche für das Modell "Seek Compact XR" ergibt eine Temperaturtoleranz $tol_{th} = 0.07 ^{\circ}C$.
+
+\begin{equation}
+   u_i = \sqrt{ \left( \frac{tol_{th}}{2 \sqrt{3}} \right)^2 + u_{k,interp}^2 } 
+\end{equation}
+
 \subsection{TIFF Verarbeitung}
 Die Wahl der entsprechenden Einstellung in der Seek Thermal App ermöglicht es aufgenommene Bilder im TIFF Format abzuspeichern. 
 Dieses Bildformat ist in der Lage mehrere Bilder in eine Datei zusammenzufassen.
 Im Falle der Seek App befinden sich darunter auch die gemessenen unveränderten Temperaturwerte.
 Dementsprechend entfällt die Notwendigkeit die Temperaturen von den Farbwerten der Pixel abzuleiten.
 Der relative Fehler jedes Temperaturwertes ist in diesem Fall rein von der thermischen Messgenauigkeit der Kamera bestimmt.
-Eine Internetrecherche für das Modell "Seek Compact XR" ergibt eine Temperaturtoleranz $tol_{th} = 0.07 ^{\circ}C$.
-Die entsprechende Standardunsicherheit berechnet sich mit:
-
-\begin{equation}
-    u_{th} = \frac{tol_{th}}{2\sqrt{3}}
-\end{equation}
 
 \section{Emissionsgradbestimmung}
 Im Falle eines schwarzen Körpers ist die von der Kamera erfasste Strahlungsleistung definiert durch:
@@ -92,38 +90,44 @@ Im Falle eines schwarzen Körpers ist die von der Kamera erfasste Strahlungsleis
 
 Die reale erfasste Strahlungsleistung kann vereinfacht mittels des Emissionsgrades ausgedrückt werden. 
 Der Anteil der reflektierten Strahlung kann während der Versuche als konstant angenommen werden.
-Dementsprechend kann aus der Differenz zwischen der gemessenen Temperatur $T_\textit{sens}$ und tatsächlichen Temperatur $T_\textit{obj}$ aus zwei Versuchen der Emissionsgrad $\epsilon$ berechnet werden.
+Dementsprechend kann aus der Differenz zwischen der gemessenen Temperatur $T_m$ und tatsächlichen Temperatur $T_w$ aus zwei Versuchen der Emissionsgrad $\epsilon$ berechnet werden.
 
 \begin{equation}
-    P(T_\textit{sens}) = \epsilon \cdot P(T_\textit{obj}) + (1 - \epsilon) \cdot P(T_\textit{env})
+    P(T_m) = \epsilon \cdot P(T_w) + (1 - \epsilon) \cdot P(T_u)
+\end{equation}
+ 
+\begin{equation}
+   T_m^4 = \epsilon \cdot T_w^4 + (1 - \epsilon) \cdot T_u^4
 \end{equation}
 
 \begin{equation}
-   T_\textit{sens}^4 = \epsilon \cdot T_\textit{obj}^4 + (1 - \epsilon) \cdot T_\textit{env}^4
+    T_m^4 - \epsilon \cdot T_w^4 = (1 - \epsilon) \cdot T_u^4 = C = \textit{const.}
 \end{equation}
 
 \begin{equation}
-    T_\textit{sens}^4 - \epsilon \cdot T_\textit{obj}^4 = (1 - \epsilon) \cdot T_\textit{env}^4 = C = \textit{const.}
+    T_{m,1}^4 - \epsilon \cdot T_{w,1}^4 = T_{m,2}^4 - \epsilon \cdot T_{w,2}^4 
 \end{equation}
 
 \begin{equation}
-    T_\textit{sens,1}^4 - \epsilon \cdot T_\textit{obj,1}^4 = T_\textit{sens,2}^4 - \epsilon \cdot T_\textit{obj,2}^4 
+    \epsilon = \frac{T_{m,1}^4 - T_{m,2}^4}{T_{w,1}^4 - T_{w,2}^4}
 \end{equation}
+
+Um die Genauigkeit des auf diese Weise bestimmten Emissionsgrades zu erhöhen werden an Stelle einer einzelnen gemessenen Temperatur $T_m$ die gemittelten Temperaturen $\overline T_m$ innerhalb eines definierten Refernzbereichs verwendet.
 
 \begin{equation}
-    \epsilon = \frac{T_\textit{sens,1}^4 - T_\textit{sens,2}^4}{T_\textit{obj,1}^4 - T_\textit{obj,2}^4}
+    \overline T_m = \frac{1}{n} \sum_{i=1}^n T_i
 \end{equation}
 
-Da der Emissionsgrad der Referenzstelle ($\epsilon_\textit{obj}$) bekannt ist, kann der Emissionsgrad der Kamera ($\epsilon_\textit{sens}$) berechnet werden.
+Da der Emissionsgrad der Referenzstelle ($\epsilon_{w}$) bekannt ist, kann der Emissionsgrad der Kamera ($\epsilon_{m}$) berechnet werden.
 Weiters kann für das gesamte Bild der Emissionsgrad jedes einzelnen Pixel bestimmt werden.
-Diese Werte beziehen sich auf die tatsächliche Temperatur des Körpers $T_\textit{obj}$ und sind nur für diesen gültig.
+Diese Werte beziehen sich auf die tatsächliche Temperatur des Körpers $T_w$ und sind nur für diesen gültig.
 
 \begin{equation}
-    \epsilon_\textit{sens} = \frac{\epsilon}{\epsilon_\textit{obj}}
+    \epsilon_{m} = \frac{\epsilon}{\epsilon_{w}}
 \end{equation}
 
 \begin{equation}
-    \epsilon_\textit{pixel} = \frac{T_\textit{pixel}^4 - C}{\epsilon_\textit{sens} \cdot T_\textit{obj}^4}
+    \epsilon_i = \frac{T_i^4 - C}{\epsilon_{m} \cdot T_w^4}
 \end{equation}
 
 \begin{figure}[H]
@@ -146,12 +150,44 @@ Zur Kontrolle des berechneten Emissionsgrades kann rückwirkend die Temperatur d
 Im Idealfall zeigt der gesamte Körper die gleiche Temperatur.
 
 \begin{equation}
-    T_\textit{pixel,corr} = \sqrt[4]{\frac{T_\textit{pixel}^4 - C}{\epsilon_\textit{pixel} \cdot \epsilon_\textit{sens}}}
+    T_\textit{i,corr} = \sqrt[4]{\frac{T_i^4 - C}{\epsilon_i \cdot \epsilon_{m}}}
 \end{equation}
 
 \begin{center}
     $<$BILD - Temperatur korrigiert$>$
 \end{center}
+
+Die entsprechenden Standardunsicherheiten kann mit folgenden Formeln berechnet werden:
+
+\begin{equation}
+    u_{\overline T_m} = \sqrt{ \sum_{i=1}^n \left( \frac{u_{T_i}}{n} \right)^2 }
+\end{equation}
+
+\begin{equation}
+    u_\epsilon = \sqrt{
+        \left( \frac{4T_{m,1}^3}{T_{w,1}^4 - T_{w,2}^4} \right)^2 u_{T_{m,1}}^2 + 
+        \left( -\frac{4T_{m,2}^3}{T_{w,1}^4 - T_{w,2}^4} \right)^2 u_{T_{m,2}}^2 + 
+        \left( -\frac{4T_{w,1}^3 \left( T_{m,1}^4 - T_{m,2}^4 \right)}{\left( T_{w,1}^4 - T_{w,2}^4 \right)^2} \right)^2 u_{T_{w,1}}^2 + 
+        \left( \frac{4T_{w,2}^3 \left( T_{m,1}^4 - T_{m,2}^4 \right)}{\left( T_{w,1}^4 - T_{w,2}^4 \right)^2} \right)^2 u_{T_{w,2}}^2 + 
+    }
+\end{equation}
+
+\begin{equation}
+    u_C = \sqrt{\left( 4 T_m^3 \right)^2 u_{T_m}^2 + \left( -4 \epsilon T_w^3 \right)^2 u_{T_w}^2 + \left( -T_w^4 \right)^2  u_{\epsilon}^2} 
+\end{equation}
+
+\begin{equation}
+    u_{\epsilon_m} = \sqrt{ \left( \frac{1}{\epsilon_w} \right)^2 u_\epsilon^2 + \left( -\frac{\epsilon}{\epsilon_w^2} \right)^2 u_{\epsilon_w}^2}
+\end{equation}
+
+\begin{equation}
+    u_{\epsilon_i} = \sqrt{ 
+        \left( \frac{4 T_i^3}{\epsilon_m T_w^2} \right)^2 u_{T_i}^2 + 
+        \left( -\frac{1}{\epsilon_s T_w^4} \right)^2 u_C^2 +
+        \left( -\frac{T_i^4 - C}{\left( \epsilon_m T_w^4 \right)^2} \right)^2 u_{\epsilon_m}^2 +
+        \left( -\frac{4 T_w^3 \left( T_i^4 - C \right)}{\left( \epsilon_m T_w^4 \right)^2} \right)^2 u_{T_w}^2
+      }
+\end{equation}
 
 
 \end{document}
