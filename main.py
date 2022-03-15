@@ -53,7 +53,7 @@ def ref2_jpg():
         t_max=45,
         bar_location='left',
         interp='linear',
-        thermal_tolerance=0.035,
+        thermal_tolerance=0.07,
     )
     img.add_rectangle(345, 209, 379, 276)
     img.add_rectangle(364, 147, 391, 197)
@@ -79,7 +79,12 @@ def run2():
     img2 = ref2_jpg()
     # img1.plot_selection(title='Aufnahme 1 - Auswahl des Referenzbereichs', cbar_label='Temperatur [°C]')
     # img2.plot_selection(title='Aufnahme 2 - Auswahl des Referenzbereichs', cbar_label='Temperatur [°C]')
-    core.determine_emissivity(img1, img2, 80.7, 55.8, emissivity_true=0.95)
+    core.determine_emissivity(img1, img2, 80.7, 55.8, 
+        emissivity_true=0.95, 
+        u_emissivity_true=0.05/np.sqrt(3),
+        u_temperature1=0.5/np.sqrt(3),
+        u_temperature2=0.5/np.sqrt(3)
+    )
     img1.clear_selection()
     img2.clear_selection()
     img1.add_rectangle(417, 73, 721, 738)
