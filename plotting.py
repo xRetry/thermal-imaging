@@ -82,3 +82,16 @@ def plot_histogram(temperatures: np.ndarray, bins: int = 50, title: str = None, 
     plt.xlabel('Temperatur [°C]')
     plt.yticks([])
     plt.show()
+
+
+def plot_emissivities(vals, stds, labels):
+    n = len(vals)
+    fig, ax = plt.subplots()
+    ax.errorbar(vals, -np.arange(n), xerr=stds, fmt='o', capsize=5)
+    ax.set_ylim([-n+0.5, 0.5])
+    ax.set_yticks(-np.arange(n))
+    ax.set_yticklabels(labels)
+    ax.set_xlabel('Emissionsgrad (95% CI)')
+    ax.set_title('Vergleich der berechneten Emissionsgrade')
+    plt.tight_layout()
+    plt.show()
