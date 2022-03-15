@@ -21,9 +21,13 @@
 \captionsetup{format=myformat}
 
 
-
 \begin{document}
 \section{Zielsetzung}
+In folgender Aufgabe ist es unser Ziel mit Hilfe von Wärmebildaufnahmen der "Seek Thermal" Anwendung den Emissionsgrad zweier Flächen des "Leslie" Würfels zu bestimmen.
+Hierzu werden zwei verschiedene Datenquellen herangezogen: einerseits das Wärmebild im JPEG Format, andererseits die unveränderten Temperaturwerte aus einer TIFF Datei.
+Beide Quellen repräsentieren jeweils dieselbe Aufnahme, wodurch ein direkter Vergleich möglich ist.
+In unserer Vorgehensweise zur Auswertung legen wir besonderen Wert auf die Quantifizierung der Messunsicherheit diverser Quellen.
+Neben der Möglichkeit die statistische Signifikanz der Ergebnisse zu evaluieren, lässt sich so besser Abschätzen, ob zusätzliche Fehlerfaktoren unzureichend berücksichtigt wurden.
 
 \section{Auswertungsmethodik}
 \subsection{JPEG Verarbeitung}
@@ -52,7 +56,7 @@ Dies lässt die Frage offen, ob diese zur Präsentation auf- oder abgerundet wur
 Die Standardunsicherheit der Randtemperaturen $u_{round}$ kann quantifiziert werden durch:
 
 \begin{equation}
-    u_{round} = \frac{1}{2\sqrt{3}}
+    u_{round} = \frac{0.5}{\sqrt{3}}
 \end{equation}
 
 Folglich ergibt sich ein möglicher Temperaturfehler für jeden Farbwert der Skala, welcher sich über die Fehlerfortpflanzung berechnen lässt:
@@ -88,7 +92,11 @@ Eine Internetrecherche hat für das Modell "Seek Compact XR" eine Temperaturtole
 Weitere Informationen konnten nicht aufgefunden werden.
 
 \begin{equation}
-   u_i = \sqrt{ \left( \frac{tol_{th}}{2 \sqrt{3}} \right)^2 + u_{k,interp}^2 } 
+    u_{th} = \frac{tol_{th}}{\sqrt{3}}
+\end{equation}
+
+\begin{equation}
+   u_i = \sqrt{ u_{th}^2 + u_{k,interp}^2 } 
 \end{equation}
 
 \subsection{TIFF Verarbeitung}
@@ -154,11 +162,27 @@ Die entsprechenden Standardunsicherheiten können mit folgenden Formeln berechne
 \end{equation}
 
 \begin{equation}
+    \frac{\partial \epsilon}{\partial T_{m,1}} = \frac{4T_{m,1}^3}{T_{w,1}^4 - T_{w,2}^4} 
+\end{equation}
+
+\begin{equation}
+    \frac{\partial \epsilon}{\partial T_{m,2}} = -\frac{4T_{m,2}^3}{T_{w,1}^4 - T_{w,2}^4}
+\end{equation}
+
+\begin{equation}
+    \frac{\partial \epsilon}{\partial T_{w,1}} = -\frac{4T_{w,1}^3 \left( T_{m,1}^4 - T_{m,2}^4 \right)}{\left( T_{w,1}^4 - T_{w,2}^4\right)^2} 
+\end{equation}
+
+\begin{equation}
+    \frac{\partial \epsilon}{\partial T_{w,2}} =  \frac{4T_{w,2}^3 \left( T_{m,1}^4 - T_{m,2}^4 \right)}{\left( T_{w,1}^4 - T_{w,2}^4 \right)^2}
+\end{equation}
+
+\begin{equation}
     u_\epsilon = \sqrt{
-        \left( \frac{4T_{m,1}^3}{T_{w,1}^4 - T_{w,2}^4} \right)^2 u_{T_{m,1}}^2 + 
-        \left( -\frac{4T_{m,2}^3}{T_{w,1}^4 - T_{w,2}^4} \right)^2 u_{T_{m,2}}^2 + 
-        \left( -\frac{4T_{w,1}^3 \left( T_{m,1}^4 - T_{m,2}^4 \right)}{\left( T_{w,1}^4 - T_{w,2}^4 \right)^2} \right)^2 u_{T_{w,1}}^2 + 
-        \left( \frac{4T_{w,2}^3 \left( T_{m,1}^4 - T_{m,2}^4 \right)}{\left( T_{w,1}^4 - T_{w,2}^4 \right)^2} \right)^2 u_{T_{w,2}}^2 + 
+        \left( \frac{\partial \epsilon}{\partial T_{m,1}} \right)^2 u_{T_{m,1}}^2 + 
+        \left( \frac{\partial \epsilon}{\partial T_{m,2}} \right)^2 u_{T_{m,2}}^2 + 
+        \left( \frac{\partial \epsilon}{\partial T_{w,1}} \right)^2 u_{T_{w,1}}^2 + 
+        \left( \frac{\partial \epsilon}{\partial T_{w,2}} \right)^2 u_{T_{w,2}}^2
     }
 \end{equation}
 
@@ -179,8 +203,23 @@ Die entsprechenden Standardunsicherheiten können mit folgenden Formeln berechne
       }
 \end{equation}
 
+\subsection{Annahmen der Fehlerbereiche}
+In folgender Tabelle sind unsere Abschätzungen der Toleranzbereiche angeführt:
+
+\begin{center}
+    \begin{tabular}{llll}
+        Name & betreffende Variable(n) & Fehlerbereich & zugehörige Standardunsicherheit\\
+        \hline
+        Thermische Auflösung & $T_i$ & $\pm 0.07 ^{\circ}C$ & $u_{th}$\\
+        Skalenrundung & $T_\textit{min},\ T_\textit{max}$ & $\pm 0.5 ^{\circ}C$ & $u_{round}$\\
+        Referenztemperatur & $T_{w,1},\ T_{w, 2}$ & $\pm 0.5 ^{\circ}C$ & $u_{T_w}$\\
+        Referenzemissionsgrad & $\epsilon_w$ & $\pm 0.05$ & $u_{\epsilon_w}$\\
+        \hline
+    \end{tabular}
+\end{center}
+
 \section{Ergebnisauswertung}
-Das zuvor beschriebene Verfahren kann nun verwendet werden, um die resultierenden Emissionsgrade von Daten aus JPEG und TIFF Dateien gegenüberzustellen.
+Das zuvor beschriebene Verfahren kann nun verwendet werden, um die Emissionsgrade der Flächen des Leslie Würfels abzuschätzen.
 Im ersten Schritt werden die Werte bei Verwendung der selben Kalibrierungsaufnahmen verglichen.
 
 
