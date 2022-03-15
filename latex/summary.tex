@@ -23,7 +23,7 @@
 
 \begin{document}
 \section{Zielsetzung}
-In folgender Aufgabe ist es unser Ziel mit Hilfe von Wärmebildaufnahmen der "Seek Thermal" Anwendung den Emissionsgrad zweier Flächen des "Leslie" Würfels zu bestimmen.
+In folgender Aufgabe ist es unser Ziel mit Hilfe von Wärmebildaufnahmen der \textquotedblleft Seek Thermal\textquotedblright Anwendung den Emissionsgrad zweier Flächen des \textquotedblleft Leslie\textquotedblright Würfels zu bestimmen.
 Hierzu werden zwei verschiedene Datenquellen herangezogen: einerseits das Wärmebild im JPEG Format, andererseits die unveränderten Temperaturwerte aus einer TIFF Datei.
 Beide Quellen repräsentieren jeweils dieselbe Aufnahme, wodurch ein direkter Vergleich möglich ist.
 In unserer Vorgehensweise zur Auswertung legen wir besonderen Wert auf die Quantifizierung der Messunsicherheit diverser Quellen.
@@ -88,7 +88,7 @@ In diesem Fall liegen alle Farbwerte auf einer eindeutig definierten Linie, wodu
 
 Die zugehörigen Unsicherheitswerte der Temperatur für jeden Pixel im Bildes $u_i$ können ebenso interpoliert werden.
 Sie kombinieren sich mit der thermischen Messungenauigkeit der Kamera.
-Eine Internetrecherche hat für das Modell "Seek Compact XR" eine Temperaturtoleranz von $tol_{th} = 0.07 ^{\circ}C$ ergeben.
+Eine Internetrecherche hat für das Modell \textquotedblleft Seek Compact XR\textquotedblright eine Temperaturtoleranz von $tol_{th} = 0.07 ^{\circ}C$ ergeben.
 Weitere Informationen konnten nicht aufgefunden werden.
 
 \begin{equation}
@@ -158,7 +158,7 @@ Diese Werte beziehen sich auf die tatsächliche Temperatur des Körpers $T_w$ un
 Die entsprechenden Standardunsicherheiten können mit folgenden Formeln berechnet werden:
 
 \begin{equation}
-    u_{\overline T_m} = \sqrt{ \sum_{i=1}^n \left( \frac{u_{T_i}}{n} \right)^2 }
+    u_{\overline T_m} = \sqrt{ \sum_{i=1}^n \frac{T_i^2 + u_i^2}{n} - \overline T_i^2}
 \end{equation}
 
 \begin{equation}
@@ -225,25 +225,40 @@ Im ersten Schritt werden die Werte bei Verwendung der selben Kalibrierungsaufnah
 
 \begin{figure}[H]
     \centering
-    \captionsetup{width=12cm}
-    \includegraphics[width=6cm]{img/ref_sel_1.png}
-    \includegraphics[width=6cm]{img/ref_sel_2.png}
+    \captionsetup{width=14cm}
+    \includegraphics[width=7.5cm]{img/ref_tiff_1.png}
+    \includegraphics[width=7.5cm]{img/ref_tiff_2.png}
+    \includegraphics[width=7.5cm]{img/ref_jpg_1.png}
+    \includegraphics[width=7.5cm]{img/ref_jpg_2.png}
     \caption{
-        Die Auswahl eines Referenzbereiches (graue Rechtecke) mit bekanntem Emissionsgrad für beide Bilder.
+        Die Auswahl eines Referenzbereiches (graue Rechtecke) mit bekanntem Emissionsgrad.
         Aus diesem Bereich werden alle Temperaturwerte zur Berechnung des tatsächlichen Emissionsgrades gemittelt. 
     }
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \captionsetup{width=12cm}
-    \includegraphics[width=6cm]{img/eps_1.png}
-    \includegraphics[width=6cm]{img/eps_2.png}
+    \captionsetup{width=14cm}
+    \includegraphics[width=7.5cm]{img/eps_tiff_1.png}
+    \includegraphics[width=7.5cm]{img/eps_tiff_2.png}
+    \includegraphics[width=7.5cm]{img/eps_jpg_1.png}
+    \includegraphics[width=7.5cm]{img/eps_jpg_2.png}
     \caption{
-        Der berechnete Emissionsgrad für jeden Pixel der beiden Bilder.
+        Der berechnete Emissionsgrad für jeden Pixel der Bilder.
         Da die Temperatur des Würfels als Referenz herangezogen wurde, ist das Resultat nur für diesen gültig.
+        Für eine Punktabschätzung des Emissionsgrades werden alle Werte im ausgewählten Bereich nochmals gemittelt.
     }
 \end{figure}
+
+\begin{figure}[H]
+    \centering
+    \captionsetup{width=7cm}
+    \includegraphics[width=7.5cm]{img/eps_comp.png}
+    \caption{
+        Direkter Vergleich des gemittelten Emissionsgrad innerhalb der Auswahlbereichs.
+    }
+\end{figure}
+
 
 \section{Schlussfolgerung}
 
