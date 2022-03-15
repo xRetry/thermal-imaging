@@ -69,8 +69,10 @@ class ThermalImage:
         emissivity_selected = picture.combine_selections(self._emissivity_map, self._lines, self._rects)
         uncertainties_selected = picture.combine_selections(self._u_emissivity_map, self._lines, self._rects)
         emissivity_mean = np.mean(emissivity_selected)
-        u_mean = np.sqrt(np.sum((uncertainties_selected / len(uncertainties_selected))**2))
+        # u_mean = np.sqrt(np.sum((uncertainties_selected / len(uncertainties_selected))**2))
+        u_mean = errors_of_mean(emissivity_selected, uncertainties_selected)
         print(emissivity_mean, u_mean*2)
+        return emissivity_mean, u_mean
 
     def get_selection(self):
         image_selected = picture.combine_selections(self._image, self._lines, self._rects)
@@ -94,8 +96,10 @@ additional_images: List[Tuple[ThermalImage, float, float]] = None) -> None:
     emissivity_camera = emissivity_effective / emissivity_true
     constant = t1_mean**4 - emissivity_effective * true_temperature1**4
 
-    u1_mean = np.sqrt(np.sum((img1_selected._uncertainties/len(img1_selected._uncertainties))**2))
-    u2_mean = np.sqrt(np.sum((img2_selected._uncertainties/len(img2_selected._uncertainties))**2))
+    # u1_mean = np.sqrt(np.sum((img1_selected._uncertainties/len(img1_selected._uncertainties))**2))
+    # u2_mean = np.sqrt(np.sum((img2_selected._uncertainties/len(img2_selected._uncertainties))**2))
+    u1_mean = errors_of_mean(img1_selected._temperatures.flatten(), img1_selected._uncertainties)
+    u2_mean = errors_of_mean(img2_selected._temperatures.flatten(), img2_selected._uncertainties)
 
     u_emissivity = np.sqrt(
         ((4 * t1_mean**3)/(true_temperature1**4 - true_temperature2**4))**2 * u1_mean**2 + \
@@ -132,3 +136,8 @@ def set_emissivity(img: ThermalImage, emissivity_camera, u_emissivity_camera, co
     )
 
     img.set_camera_emissivity(emissivity_map, u_emissivity_map)
+
+
+def errors_of_mean(x, u):
+    std = np.sqrt(np.sum(x**2 + u**2) / len(x) - np.mean(x)**2)
+    return std
