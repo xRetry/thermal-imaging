@@ -70,7 +70,7 @@ class ThermalImage:
         uncertainties_selected = picture.combine_selections(self._u_emissivity_map, self._lines, self._rects)
         emissivity_mean = np.mean(emissivity_selected)
         u_mean = np.sqrt(np.sum((uncertainties_selected / len(uncertainties_selected))**2))
-        print(emissivity_mean, u_mean)
+        print(emissivity_mean, u_mean*2)
 
     def get_selection(self):
         image_selected = picture.combine_selections(self._image, self._lines, self._rects)
@@ -100,8 +100,8 @@ additional_images: List[Tuple[ThermalImage, float, float]] = None) -> None:
     u_emissivity = np.sqrt(
         ((4 * t1_mean**3)/(true_temperature1**4 - true_temperature2**4))**2 * u1_mean**2 + \
         ((4 * t2_mean**3)/(true_temperature1**4 - true_temperature2**4))**2 * u2_mean**2 + \
-        ((4 * true_temperature1**3 * (t1_mean**4 - t2_mean**4)) / (true_temperature1**4 - true_temperature2**4))**2 * u_temperature1**2 + \
-        ((4 * true_temperature2**3 * (t1_mean**4 - t2_mean**4)) / (true_temperature1**4 - true_temperature2**4))**2 * u_temperature2**2 
+        ((4 * true_temperature1**3 * (t1_mean**4 - t2_mean**4)) / (true_temperature1**4 - true_temperature2**4)**2)**2 * u_temperature1**2 + \
+        ((4 * true_temperature2**3 * (t1_mean**4 - t2_mean**4)) / (true_temperature1**4 - true_temperature2**4)**2)**2 * u_temperature2**2 
     )
 
     u_constant = np.sqrt(
@@ -127,8 +127,8 @@ def set_emissivity(img: ThermalImage, emissivity_camera, u_emissivity_camera, co
     u_emissivity_map = np.sqrt(
         ((4*(img._temperatures+K)**3)/(emissivity_camera*true_temperature**4))**2 * img._uncertainties**2 + \
         (1/(emissivity_camera*true_temperature**4))**2 * u_constant**2 + \
-        (((img._temperatures+K)**4 - constant) / (emissivity_true * true_temperature**4)**2)**2 * u_emissivity_camera**2 + \
-        ((4*true_temperature**3 * ((img._temperatures+K)**4 - constant)) / (emissivity_true * true_temperature**4)**2)**2 * u_temperature_true**2
+        ((true_temperature**4 * ((img._temperatures+K)**4 - constant)) / (emissivity_true * true_temperature**4)**2)**2 * u_emissivity_camera**2 + \
+        ((4*emissivity_camera*true_temperature**3 * ((img._temperatures+K)**4 - constant)) / (emissivity_true * true_temperature**4)**2)**2 * u_temperature_true**2
     )
 
     img.set_camera_emissivity(emissivity_map, u_emissivity_map)
