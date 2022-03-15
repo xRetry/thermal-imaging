@@ -20,19 +20,18 @@ class ThermalImage:
         self._temperatures = temperatures
         self._uncertainties = uncertainties
         self._lines, self._rects = [], []
-        self._emissivity_camera = 1
-        self._constant = 0
         self._emissivity_map = np.ones_like(temperatures)
+        self._u_emissivity_map = np.zeros_like(temperatures)
 
-    def set_camera_emissivity(self, emissivity_camera: float, constant: float):
-        self._emissivity_camera = emissivity_camera
-        self._constant = constant
+    def set_camera_emissivity(self, emissivity_map: np.ndarray, u_emissivity_map: np.ndarray):
+        self._emissivity_map = emissivity_map
+        self._u_emissivity_map = u_emissivity_map
 
     def plot_image(self, title=None):
         plotting.plot_image(self._image, title=title)
     
     def plot_temperatures(self, title=None, cbar_label=None):
-        plotting.plot_image((self._temperatures - self._constant) / (self._emissivity_map * self._emissivity_camera), title=title, cbar_label=cbar_label)
+        plotting.plot_image(self._temperature, title=title, cbar_label=cbar_label)
 
     def add_line(self, x1: int, y1: int, x2: int, y2: int):
         line_points = np.array([[x1, y1], [x2, y2]])
@@ -63,22 +62,15 @@ class ThermalImage:
             plotting.plot_image(rect_select)
             plotting.plot_histogram(rect_select)
 
-    def plot_emissivity(self, true_temperature: float, title=None, cbar_label=None):
-        self._emissivity_map = (self._temperatures - self._constant) / (self._emissivity_camera * true_temperature)
-        plotting.plot_image(self._emissivity_map, title=title, cbar_label=cbar_label)
-
-    def calibrate_selection(self, true_temperature: float, tolerance: float = 0):
-        temperatures_selected = picture.combine_selections(self._temperatures, self._lines, self._rects)
-        uncertainties_selected = picture.combine_selections(self._uncertainties, self._lines, self._rects)
-        plotting.plot_histogram(temperatures_selected)
-        thermal.calibrate_temperatures(
-            self._temperatures,
-            self._uncertainties,
-            temperatures_selected,
-            uncertainties_selected,
-            true_temperature,
-            tolerance
-        )
+    def plot_emissivity(self, title=None, cbar_label=None):
+        line_coords = [picture._get_line_coords(l) for l in self._lines]
+        rect_coords = [picture._get_rect_coords(r) for r in self._rects]
+        plotting.plot_image(self._emissivity_map, line_coords=line_coords, rect_coords=rect_coords, title=title, cbar_label=cbar_label)
+        emissivity_selected = picture.combine_selections(self._emissivity_map, self._lines, self._rects)
+        uncertainties_selected = picture.combine_selections(self._u_emissivity_map, self._lines, self._rects)
+        emissivity_mean = np.mean(emissivity_selected)
+        u_mean = np.sqrt(np.sum((uncertainties_selected / len(uncertainties_selected))**2))
+        print(emissivity_mean, u_mean)
 
     def get_selection(self):
         image_selected = picture.combine_selections(self._image, self._lines, self._rects)
@@ -87,15 +79,56 @@ class ThermalImage:
         return ThermalImage(image_selected, temperatures_selected, uncertainties_selected)
 
  
-def determine_emissivity(img1: ThermalImage, img2: ThermalImage, true_temperature1: float, true_temperature2: float, true_emissivity: float = 1) -> None:
+def determine_emissivity(img1: ThermalImage, img2: ThermalImage, true_temperature1: float, true_temperature2: float, 
+emissivity_true: float = 1, u_temperature1: float = 0, u_temperature2: float = 0, u_emissivity_true: float = 0, 
+additional_images: List[Tuple[ThermalImage, float, float]] = None) -> None:
+    K = 273.15
     img1_selected = img1.get_selection()
     img2_selected = img2.get_selection()
-    t1_mean = np.mean(img1_selected._temperatures.flatten())
-    t2_mean = np.mean(img2_selected._temperatures.flatten())
+    t1_mean = np.mean(img1_selected._temperatures.flatten()) + K
+    t2_mean = np.mean(img2_selected._temperatures.flatten()) + K
+    true_temperature1 = true_temperature1 + K
+    true_temperature2 = true_temperature2 + K
 
-    emissivity_effective = (t1_mean - t2_mean) / (true_temperature1 - true_temperature2)
-    emissivity_camera = emissivity_effective / true_emissivity
-    constant = t1_mean - emissivity_effective * true_temperature1
+    emissivity_effective = (t1_mean**4 - t2_mean**4) / (true_temperature1**4 - true_temperature2**4)
+    emissivity_camera = emissivity_effective / emissivity_true
+    constant = t1_mean**4 - emissivity_effective * true_temperature1**4
 
-    img1.set_camera_emissivity(emissivity_camera, constant)
-    img2.set_camera_emissivity(emissivity_camera, constant)
+    u1_mean = np.sqrt(np.sum((img1_selected._uncertainties/len(img1_selected._uncertainties))**2))
+    u2_mean = np.sqrt(np.sum((img2_selected._uncertainties/len(img2_selected._uncertainties))**2))
+
+    u_emissivity = np.sqrt(
+        ((4 * t1_mean**3)/(true_temperature1**4 - true_temperature2**4))**2 * u1_mean**2 + \
+        ((4 * t2_mean**3)/(true_temperature1**4 - true_temperature2**4))**2 * u2_mean**2 + \
+        ((4 * true_temperature1**3 * (t1_mean**4 - t2_mean**4)) / (true_temperature1**4 - true_temperature2**4))**2 * u_temperature1**2 + \
+        ((4 * true_temperature2**3 * (t1_mean**4 - t2_mean**4)) / (true_temperature1**4 - true_temperature2**4))**2 * u_temperature2**2 
+    )
+
+    u_constant = np.sqrt(
+        (4*t1_mean**3)**2 * u1_mean**2 + (4*emissivity_effective*true_temperature1**3)**2 * u_temperature1**2 + (true_temperature1**4)**2 * u_emissivity**2
+    )
+
+    u_emissivity_camera = np.sqrt(
+        (1/emissivity_true)**2 * u_emissivity**2 + (emissivity_effective/emissivity_true**2)**2 * u_emissivity_true**2
+    )
+
+    set_emissivity(img1, emissivity_camera, u_emissivity_camera, constant, u_constant, true_temperature1, u_temperature1, emissivity_true)
+    set_emissivity(img2, emissivity_camera, u_emissivity_camera, constant, u_constant, true_temperature2, u_temperature2, emissivity_true)
+    if additional_images is not None:
+        for img_data in additional_images:
+            set_emissivity(img_data[0], emissivity_camera, u_emissivity_camera, constant, u_constant, img_data[1], img_data[2], emissivity_true)
+
+
+def set_emissivity(img: ThermalImage, emissivity_camera, u_emissivity_camera, constant, u_constant, true_temperature, u_temperature_true, emissivity_true):
+    K = 273.15
+
+    emissivity_map = ((img._temperatures+K)**4 - constant) / (emissivity_camera * true_temperature**4)
+
+    u_emissivity_map = np.sqrt(
+        ((4*(img._temperatures+K)**3)/(emissivity_camera*true_temperature**4))**2 * img._uncertainties**2 + \
+        (1/(emissivity_camera*true_temperature**4))**2 * u_constant**2 + \
+        (((img._temperatures+K)**4 - constant) / (emissivity_true * true_temperature**4)**2)**2 * u_emissivity_camera**2 + \
+        ((4*true_temperature**3 * ((img._temperatures+K)**4 - constant)) / (emissivity_true * true_temperature**4)**2)**2 * u_temperature_true**2
+    )
+
+    img.set_camera_emissivity(emissivity_map, u_emissivity_map)
