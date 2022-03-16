@@ -219,9 +219,8 @@ In folgender Tabelle sind unsere Abschätzungen der Toleranzbereiche angeführt:
 \end{center}
 
 \section{Ergebnisauswertung}
-Das zuvor beschriebene Verfahren kann nun verwendet werden, um die Emissionsgrade der Flächen des Leslie Würfels abzuschätzen.
-Im ersten Schritt werden die Werte bei Verwendung der selben Kalibrierungsaufnahmen verglichen.
-
+Die zuvor beschriebenen Auswertungsschritte werden nun verwendet, um den Emissionsgrad einer Fläche des Leslie Würfels abzuschätzen.
+Im ersten Schritt werden möglichst homogene Bereiche des Klebebandes mit bekannten Emissionsgrad ausgewählt.
 
 \begin{figure}[H]
     \centering
@@ -233,8 +232,13 @@ Im ersten Schritt werden die Werte bei Verwendung der selben Kalibrierungsaufnah
     \caption{
         Die Auswahl eines Referenzbereiches (graue Rechtecke) mit bekanntem Emissionsgrad.
         Aus diesem Bereich werden alle Temperaturwerte zur Berechnung des tatsächlichen Emissionsgrades gemittelt. 
-    }
+        }
 \end{figure}
+    
+Die Temperaturen in diesem Bereichen werden gemittelt und dienen als Messwerte ($\overline T_{m,1}$, $\overline T_{m,2}$).
+Sie werden verwendet um den kombinierten Emissionsgrad $\epsilon$ und in weiterer Folge den Emissionsgrad der Kamera $\epsilon_m$ zu bestimmen.
+Unter der Annahme, dass $\epsilon_m$ für das gesamte Bild gleich ist, kann der Emissionsgrad für jeden Pixel $\epsilon_i$ berechnet werden.
+Schlussendlich wird ein Bereich der zu messenden Flächen ausgewählt und die gemittelten Emissionsgrade verglichen.
 
 \begin{figure}[H]
     \centering
@@ -255,11 +259,19 @@ Im ersten Schritt werden die Werte bei Verwendung der selben Kalibrierungsaufnah
     \captionsetup{width=7cm}
     \includegraphics[width=7.5cm]{img/eps_comp.png}
     \caption{
-        Direkter Vergleich des gemittelten Emissionsgrad innerhalb der Auswahlbereichs.
+        Direkter Vergleich des gemittelten Emissionsgrad innerhalb der Auswahlbereiche.
     }
 \end{figure}
 
 
 \section{Schlussfolgerung}
+Das angewandte Verfahren versucht aus Datenquellen mit fraglicher Genauigkeit brauchbare Emissionswerte zu generieren.
+Die Resultate zeigen jedoch eine enorme Abweichung zwischen realen und gemessenen Werten.
+Da es sich bei der zu bestimmenden Fläche um mattes Aluminium handelt, ist als wahrer Emissionsgrad von Werten zwischen $0.1$ und $0.2$ auszugehen.
+Dies ist weit entfernt von den ermittelten Werten von $0.4$ bis $0.62$.
+\\
+\\
+Mögliche Gründe hierfür sind vielseitig:
+
 
 \end{document}
