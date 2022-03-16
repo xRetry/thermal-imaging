@@ -23,11 +23,11 @@
 
 \begin{document}
 \section{Zielsetzung}
-In folgender Aufgabe ist es unser Ziel mit Hilfe von Wärmebildaufnahmen der \textquotedblleft Seek Thermal\textquotedblright Anwendung den Emissionsgrad zweier Flächen des \textquotedblleft Leslie\textquotedblright Würfels zu bestimmen.
+In folgender Aufgabe ist es unser Ziel mit Hilfe von Wärmebildaufnahmen der \textquotedblleft Seek Thermal\textquotedblright Anwendung den Emissionsgrad einer Fläche des \textquotedblleft Leslie\textquotedblright Würfels zu bestimmen.
 Hierzu werden zwei verschiedene Datenquellen herangezogen: einerseits das Wärmebild im JPEG Format, andererseits die unveränderten Temperaturwerte aus einer TIFF Datei.
 Beide Quellen repräsentieren jeweils dieselbe Aufnahme, wodurch ein direkter Vergleich möglich ist.
 In unserer Vorgehensweise zur Auswertung legen wir besonderen Wert auf die Quantifizierung der Messunsicherheit diverser Quellen.
-Neben der Möglichkeit die statistische Signifikanz der Ergebnisse zu evaluieren, lässt sich so besser Abschätzen, ob zusätzliche Fehlerfaktoren unzureichend berücksichtigt wurden.
+Neben dem Einsatz statistischer Analysewerkzeuge lässt sich so besser Abschätzen, ob zusätzliche Fehlerfaktoren unzureichend berücksichtigt wurden.
 
 \section{Auswertungsmethodik}
 \subsection{JPEG Verarbeitung}
@@ -36,7 +36,7 @@ Dies ist für eine weitere quantitative Auswertung problematisch, da die gemesse
 Zusätzlich ist die Erstellung von JPEG Dateien mit dem Verlust von Bildinformation gekoppelt. 
 Dementsprechend ist es für eine quantitative Auswertung notwendig die ursprünglichen Temperaturinformationen für jeden Pixel möglichst genau wiederherzustellen.
 Dies wird in zwei Schritten bewerkstelligt:
-Einerseits der Zuordnung von Farb- und Temperaturwerten mittels des im Bild inkludierten Farbbalkens, andererseits der Umwandlung aller Pixel in Temperaturen.
+Einerseits der Zuordnung von Farb- und Temperaturwerten mittels des im Bild inkludierten Farbskala, andererseits der Umwandlung aller Pixel in Temperaturen.
 
 \subsubsection{Farb-Temperatur Zuordnung}
 
@@ -267,11 +267,19 @@ Schlussendlich wird ein Bereich der zu messenden Flächen ausgewählt und die ge
 \section{Schlussfolgerung}
 Das angewandte Verfahren versucht aus Datenquellen mit fraglicher Genauigkeit brauchbare Emissionswerte zu generieren.
 Die Resultate zeigen jedoch eine enorme Abweichung zwischen realen und gemessenen Werten.
-Da es sich bei der zu bestimmenden Fläche um mattes Aluminium handelt, ist als wahrer Emissionsgrad von Werten zwischen $0.1$ und $0.2$ auszugehen.
-Dies ist weit entfernt von den ermittelten Werten von $0.4$ bis $0.62$.
+Da es sich bei der zu bestimmenden Fläche um mattes Aluminium handelt, ist von einem wahren Emissionsgrad zwischen $0.1$ und $0.2$ auszugehen.
+Dies ist weit entfernt von dem ermittelten Wertebereich von $0.4$ bis $0.62$.
+Auch die berechneten Unsicherheiten können diese Diskrepanz nicht erklären.
 \\
 \\
-Mögliche Gründe hierfür sind vielseitig:
+Mögliche Gründe hierfür sind vielseitig:\\
+Einerseits wurden etliche Annahmen getroffen, sowohl Explizite bei der Definition von Fehlerbereichen als auch Implizite anhand der gewählten Berechnungen.
+So ist zum Beispiel die Annahme, dass die Menge der reflektierten Strahlung für beide Aufnahmen gleich ist in der Praxis sehr unwahrscheinlich.
+Dies könnte zu einem größeren Fehler führen als unsererseits erwartet.\\
+Andererseits könnte die kamerainternen Bildverarbeitung nicht unseren Erwartungen entsprechen, wodurch sich ein systematischer Fehler in unserem Auswerteverfahren ergibt.
+\\
+\\
+Zumindest der direkte Vergleich von TIFF und JPEG zeigt ein erwartetes Resultat: Die Verwendung von JPEG als Datenquelle führt zu mehr Unsicherheit bei dem bestimmten Emissionsgrad.
 
 
 \end{document}
